@@ -83,7 +83,7 @@ const configureBot = () => {
 
     const orderToString = (order: PopulatedOrder) => {
       return `- ${order._id}: ${order.menu.name} ${
-        order.completed !== false ? "Completed! 🎉" : "⏲️ Pending..."
+        order.completed === true ? "Completed! 🎉" : "⏲️ Pending..."
       }`;
     };
 
