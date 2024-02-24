@@ -1,5 +1,5 @@
 import { Context, Telegraf } from "telegraf";
-import { ChatUser, Menu, Order, Plate } from "@hackathon/types";
+import { ChatUser, Menu, Order, Plate, PopulatedOrder } from "@hackathon/types";
 import { MenuEntity } from "../entities/menu";
 import { ChatUserEntity } from "../entities/chatUser";
 import { OrderEntity } from "../entities/order";
@@ -58,7 +58,7 @@ const configureBot = () => {
         .join("\n")}`;
     };
     await ctx.replyWithMarkdown(
-      `Here are the available menus: \n ${menus.map(menuToString).join("\n")} `,
+      `Here are the available menus:\n${menus.map(menuToString).join("\n")} `,
       {
         reply_markup: {
           inline_keyboard: [
@@ -72,30 +72,27 @@ const configureBot = () => {
   bot.on("callback_query", async (ctx) => {
     const order = await createOrder(ctx.chatUser._id, ctx.callbackQuery.data);
     await ctx.replyWithMarkdown(
-      `Your order is on the way! OrderId: ${order._id} `
+      `Your order is on the way! OrderId: ${order._id}`
     );
   });
 
-  // bot.command("order", async (ctx) => {
-  //   const orders = await OrderEntity.find();
-  //   const orderToString = (order: Order, menu: Menu) => {
-  //     return `- ${order._id}: ${menu.name} ${order.completed}`;
-  //   };
-  //   const plateToString = (plate: Plate) => {
-  //     return `- ${plate.name}: ${plate.description}`;
-  //   };
+  bot.command("order", async (ctx) => {
+    const orders = await OrderEntity.find<PopulatedOrder>({
+      chatUser: ctx.chatUser._id,
+    }).populate(["menu", "chatUser"]);
 
-  //   const menuToString = (menu: Menu) => {
-  //     return `${menu.name}:${menu.price}€ ${menu.plates
-  //       .map(plateToString)
-  //       .join("\n")}`;
-  //   };
-  //   await ctx.replyWithMarkdown(
-  //     `This is the status of your orders: \n ${menus
-  //       .map(menuToString)
-  //       .join("\n")}`
-  //   );
-  // });
+    const orderToString = (order: PopulatedOrder) => {
+      return `- ${order._id}: ${order.menu.name} ${
+        order.completed !== false ? "Completed! 🎉" : "⏲️ Pending..."
+      }`;
+    };
+
+    await ctx.replyWithMarkdown(
+      `This is the status of your orders:\n${orders
+        .map(orderToString)
+        .join("\n")}`
+    );
+  });
 
   return bot;
 };
