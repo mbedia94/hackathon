@@ -3,11 +3,13 @@ import configureBot from "./bot";
 import { connectDB } from "./mongo/connection";
 import * as cors from "cors";
 import menuRouter from "./routes/menuRoutes";
+import orderRouter from "./routes/ordersRouters";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/menus", menuRouter);
+app.use("/orders", orderRouter);
 
 connectDB().then(() => console.log("Connected to database!"));
 
