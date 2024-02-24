@@ -1,4 +1,3 @@
-import { fromPairs } from "cypress/types/lodash";
 import { MenuEntity } from "../entities/menu";
 
 const getMenus = async (req, res) => {
